@@ -47,6 +47,8 @@ PHP_MINFO_FUNCTION(ioc);
 ZEND_METHOD(ioc, init);
 ZEND_METHOD(ioc, make);
 
+ZEND_FUNCTION(ioc_version);
+
 /* 
   	Declare any global variables you may need between the BEGIN
 	and END macros here:     
@@ -76,6 +78,7 @@ ZEND_END_MODULE_GLOBALS(ioc)
 void ioc_init();
 void ioc_load_class( HashTable *fileList );
 void hashtable_foreach_print( HashTable *ht );
+zval* ioc_get_object( char *name );
 
 #endif	/* PHP_IOC_H */
 

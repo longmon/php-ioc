@@ -47,7 +47,7 @@ const zend_function_entry ioc_class_methods[] = {
 	
 	PHP_FE_END	/* Must be the last line in ioc_functions[] */
 };
-const zend_function_entry ioc_functions = {
+const zend_function_entry ioc_functions[] = {
 	ZEND_FE( ioc_version, NULL )
 	PHP_FE_END
 };
@@ -105,6 +105,10 @@ PHP_MINIT_FUNCTION(ioc)
 	/* If you have INI entries, uncomment these lines 
 	REGISTER_INI_ENTRIES();
 	*/
+
+	INIT_CLASS_ENTRY( ioc_class_entry, "ioc", ioc_class_methods );
+	ioc_class_entry_ptr = zend_register_internal_class( &ioc_class_entry TSRMLS_CC);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -154,13 +158,25 @@ PHP_MINFO_FUNCTION(ioc)
 
 ZEND_METHOD(ioc, init)
 {
-    	zval *fileList = NULL;
+    zval *fileList = NULL;
 	if( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"a", &fileList ) == FAILURE ){
 		return;
 	}
 	ioc_init();
-	ioc_load_class( Z_ARRVAL_P(fileList));
+	ioc_load_class( Z_ARRVAL_P(fileList) );
 	hashtable_foreach_print( class_map );
+
+	zval *obj;
+	MAKE_STD_ZVAL(obj);
+	zend_class_entry *ce;
+
+	//hashtable_foreach_print(EG(class_table));
+
+	if( zend_hash_find( EG(class_table), "foo", sizeof("foo"), (void **)&ce ) == SUCCESS ){
+		object_init_ex(obj, ce);	
+	} else {
+		printf("get class failed\n");
+	}
 	RETURN_TRUE;
 }
 ZEND_METHOD(ioc, make)
@@ -172,6 +188,11 @@ ZEND_METHOD(ioc, make)
 	}
 	zval *object = ioc_get_object( name );
 	return_value = object;
+}
+
+ZEND_FUNCTION(ioc_version)
+{
+	RETURN_STRING("0.1", 1);
 }
 
 void ioc_init()
@@ -203,10 +224,10 @@ void ioc_load_class( HashTable *fileList )
 			if( zend_hash_get_current_key( fileList, &key, &idx, 0) == HASH_KEY_IS_STRING ) {
 				zend_hash_add( class_map, key, sizeof(key), (void**)file, sizeof(file), NULL );
 			} else {
-				zend_hash_index_update( clsss_map,(ulong)i, (void**)file, sizeof(file), NULL );
+				zend_hash_index_update( class_map,(ulong)i, (void**)file, sizeof(file), NULL );
 			}
 		}
-		zend_hash_move_forward(ht);
+		zend_hash_move_forward( fileList );
 	}
 }
 
@@ -220,18 +241,22 @@ void hashtable_foreach_print( HashTable *ht ){
 		char *key;
 		int idx;
 		zend_hash_get_current_data( ht, (void **)&item);
+		convert_to_string_ex(item);
 		if( zend_hash_get_current_key(ht,&key,&idx,0) == HASH_KEY_IS_STRING ){
-			printf("    %s=>%s\n", key, Z_ARRVAL_PP(item));
+			printf("    %s=>%s\n", key, Z_STRVAL_PP(item));
 		} else {
-			printf("    %d=>%s\n", i,Z_ARRVAL_PP(item));
+			printf("    %d=>%s\n", i,Z_STRVAL_PP(item));
 		}
 		zend_hash_move_forward(ht);
 	}
 }
 
-zval *ioc_get_object( char *name ){
+zval* ioc_get_object( char *name ){
 	zval *obj = NULL;
-	if( zend_hash_find( ) == SUCCESS){
+	if( zend_hash_find(  object_map, name, sizeof(name), (void**)&obj ) == SUCCESS){
+		return obj;
+	}
 
-	} 
+	//object_init_ex( obj, );
+	return obj;
 }
