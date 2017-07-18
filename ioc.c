@@ -35,8 +35,8 @@ ZEND_DECLARE_MODULE_GLOBALS(ioc)
 static int le_ioc;
 static zend_class_entry ioc_class_entry;
 static zend_class_entry *ioc_class_entry_ptr;
-static HashTable *class_map 	= NULL;
-static HashTable *object_map 	= NULL;
+HashTable *class_map 	= NULL;
+HashTable *object_map 	= NULL;
 
 /* {{{ ioc_functions[]
  *
@@ -123,11 +123,11 @@ PHP_MSHUTDOWN_FUNCTION(ioc)
 	*/
 	if( class_map ){
 		zend_hash_destroy(class_map);
-		efree(class_map);
+		pefree(class_map, 1);
 	}
 	if( object_map ){
 		zend_hash_destroy(object_map);
-		efree(object_map );
+		pefree(object_map, 1 );
 	}
 	return SUCCESS;
 }
@@ -196,11 +196,11 @@ ZEND_FUNCTION(ioc_version)
 void ioc_init()
 {
 	if( !class_map ){
-		ALLOC_HASHTABLE(class_map);
+		class_map = pemalloc(sizeof(HashTable), 1);
 		zend_hash_init(class_map, 64, NULL, NULL, 1);
 	}
 	if( !object_map ) {
-		ALLOC_HASHTABLE(object_map);
+		object_map = pemalloc(sizeof(HashTable), 1);
 		zend_hash_init(object_map, 64, NULL, NULL, 1);
 	}
 }
