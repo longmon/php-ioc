@@ -173,7 +173,7 @@ ZEND_METHOD(ioc, init)
 	}
 	ioc_init();
 	ioc_load_class( Z_ARRVAL_P(fileList) );
-	//( class_map );	
+	//hashtable_foreach_print( class_map );	
 }
 ZEND_METHOD(ioc, make)
 {
@@ -230,7 +230,7 @@ void ioc_load_class( HashTable *fileList )
 	}
 }
 
-void ( HashTable *ht ){
+void hashtable_foreach_print( HashTable *ht ){
 	int count,i;
 	zval **item;
 	count = zend_hash_num_elements(ht);
@@ -243,7 +243,7 @@ void ( HashTable *ht ){
 			continue;
 		}
 		if( Z_TYPE_PP(item) == IS_ARRAY ){
-			return ( Z_ARRVAL_PP(item));
+			return hashtable_foreach_print( Z_ARRVAL_PP(item));
 		}
 		convert_to_string_ex(item);
 		if( zend_hash_get_current_key(ht,&key,&idx,0) == HASH_KEY_IS_STRING ){
