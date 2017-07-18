@@ -78,7 +78,9 @@ ZEND_END_MODULE_GLOBALS(ioc)
 void ioc_init();
 void ioc_load_class( HashTable *fileList );
 void hashtable_foreach_print( HashTable *ht );
-zval* ioc_get_object( char *name );
-
+int ioc_get_object( char *name, zval *return_value, zval ***argv, int argc TSRMLS_DC );
+int add_object_to_hashtable( const char *name, zval *obj );
+int get_object_from_hashtable( const char *name, zval *obj );
+int ioc_include_file( char *file TSRMLS_DC );
 #endif	/* PHP_IOC_H */
 

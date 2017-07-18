@@ -1,10 +1,5 @@
 <?php
 
-class foo{
-    public function test(){
-        echo __METHOD__,"\n";
-    }
-}
 
 $filelist = array(
     "Foo" => realpath(__DIR__)."/Foo.php",
@@ -12,3 +7,12 @@ $filelist = array(
 );
 
 ioc::init( $filelist );
+
+
+var_dump(get_included_files());
+
+Bar::halo();
+
+$foo = ioc::make("Foo");
+
+echo $foo->get();
