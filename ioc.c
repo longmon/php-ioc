@@ -236,7 +236,7 @@ void hashtable_foreach_print( HashTable *ht ){
 	zval **item;
 	count = zend_hash_num_elements(ht);
 	zend_hash_internal_pointer_reset(ht);
-	printf("fileList:%d\n", count);
+	php_printf("fileList:%d\n", count);
 	for( i = 0; i < count; i++ ){
 		char *key;
 		ulong idx;
@@ -248,9 +248,9 @@ void hashtable_foreach_print( HashTable *ht ){
 		}
 		convert_to_string_ex(item);
 		if( zend_hash_get_current_key(ht,&key,&idx,0) == HASH_KEY_IS_STRING ){
-			printf("    %s=>%s\n", key, Z_STRVAL_PP(item));
+			php_printf("    %s=>%s\n", key, Z_STRVAL_PP(item));
 		} else {
-			printf("    %d=>%s\n", i, Z_STRVAL_PP(item));
+			php_printf("    %d=>%s\n", i, Z_STRVAL_PP(item));
 		}
 		zend_hash_move_forward(ht);
 	}
