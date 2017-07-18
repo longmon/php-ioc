@@ -185,6 +185,7 @@ ZEND_METHOD(ioc, make)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Method ioc::make( class_name string [, parameter1, parameter2 ...]) required at least one paramter!");
 		RETURN_FALSE;
 	}
+	hashtable_foreach_print(object_map);
 	ioc_get_object( name, return_value, argv, argc );
 }
 
