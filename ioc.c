@@ -185,7 +185,7 @@ ZEND_METHOD(ioc, make)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Method ioc::make( class_name string [, parameter1, parameter2 ...]) required at least one paramter!");
 		RETURN_FALSE;
 	}
-	hashtable_foreach_print(object_map);
+	//hashtable_foreach_print(object_map);
 	ioc_get_object( name, return_value, argv, argc );
 }
 
@@ -269,7 +269,7 @@ int ioc_get_object( char *name, zval *return_value, zval ***argv, int argc TSRML
 	if( zend_lookup_class( name, strlen(name), &class_ce TSRMLS_CC ) == SUCCESS ){
 		
 		object_init_ex(return_value, *class_ce);	
-
+		add_object_to_hashtable(name, return_value );
 		old_scope = EG(scope);
 		EG(scope) = *class_ce;
 		zend_function *func = Z_OBJ_HT_P(return_value)->get_constructor(return_value TSRMLS_CC);
@@ -317,7 +317,7 @@ int ioc_get_object( char *name, zval *return_value, zval ***argv, int argc TSRML
 			if( argv ){
 				efree(argv);
 			}
-			add_object_to_hashtable(name, return_value );
+			
 		} else {
 			//no contructor 
 		}
