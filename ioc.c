@@ -110,6 +110,7 @@ PHP_MINIT_FUNCTION(ioc)
 	INIT_CLASS_ENTRY( ioc_class_entry, "ioc", ioc_class_methods );
 	ioc_class_entry_ptr = zend_register_internal_class( &ioc_class_entry TSRMLS_CC);
 
+	ioc_init();
 	return SUCCESS;
 }
 /* }}} */
@@ -171,7 +172,6 @@ ZEND_METHOD(ioc, init)
 	if( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"a", &fileList ) == FAILURE ){
 		return;
 	}
-	ioc_init();
 	ioc_load_class( Z_ARRVAL_P(fileList) );
 	//hashtable_foreach_print( class_map );	
 }
