@@ -173,7 +173,7 @@ ZEND_METHOD(ioc, init)
 	}
 	ioc_init();
 	ioc_load_class( Z_ARRVAL_P(fileList) );
-	//hashtable_foreach_print( class_map );	
+	//( class_map );	
 }
 ZEND_METHOD(ioc, make)
 {
@@ -230,7 +230,7 @@ void ioc_load_class( HashTable *fileList )
 	}
 }
 
-void hashtable_foreach_print( HashTable *ht ){
+void ( HashTable *ht ){
 	int count,i;
 	zval **item;
 	count = zend_hash_num_elements(ht);
@@ -243,7 +243,7 @@ void hashtable_foreach_print( HashTable *ht ){
 			continue;
 		}
 		if( Z_TYPE_PP(item) == IS_ARRAY ){
-			return hashtable_foreach_print( Z_ARRVAL_PP(item));
+			return ( Z_ARRVAL_PP(item));
 		}
 		convert_to_string_ex(item);
 		if( zend_hash_get_current_key(ht,&key,&idx,0) == HASH_KEY_IS_STRING ){
@@ -332,6 +332,9 @@ int add_object_to_hashtable( const char *name, zval *obj )
 	if( !obj ){
 		return -1;
 	}
+	if( !object_map ){
+		return -1;
+	}
 	if( zend_hash_update( object_map, name, sizeof(name), (void**)&obj, sizeof(obj), NULL) == SUCCESS ){
 		return 0;
 	}
@@ -340,6 +343,10 @@ int add_object_to_hashtable( const char *name, zval *obj )
 
 int get_object_from_hashtable( const char *name, zval *obj )
 {
+	if( !object_map ){
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Object_map had not been alloced");
+		return -1;
+	}
 	if( zend_hash_find( object_map, name, sizeof(name), (void **)&obj ) == FAILURE ){
 		return -1;
 	}
