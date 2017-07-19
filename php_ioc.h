@@ -52,10 +52,9 @@ ZEND_FUNCTION(ioc_version);
 /* 
   	Declare any global variables you may need between the BEGIN
 	and END macros here:     
-
 ZEND_BEGIN_MODULE_GLOBALS(ioc)
-	long  global_value;
-	char *global_string;
+	HashTable *class_map;
+	HashTable *object_map;
 ZEND_END_MODULE_GLOBALS(ioc)
 */
 
@@ -76,11 +75,13 @@ ZEND_END_MODULE_GLOBALS(ioc)
 #endif
 
 void ioc_init();
-void ioc_load_class( HashTable *fileList );
+void ioc_load_class_map( HashTable *fileList );
 void hashtable_foreach_print( HashTable *ht );
-int ioc_get_object( char *name, zval *return_value, zval ***argv, int argc TSRMLS_DC );
-int add_object_to_hashtable( const char *name, zval *obj );
-int get_object_from_hashtable( const char *name, zval *obj );
-int ioc_include_file( char *file TSRMLS_DC );
+int ioc_get_object_instance( char *name, zval *return_value, zval ***argv, int argc TSRMLS_DC );
+int ioc_add_object_to_hash( const char *name, zval *obj );
+int ioc_get_object_from_hash( const char *name, zval *obj );
+int ioc_include_and_compile_file( char *file TSRMLS_DC );
+char* ioc_get_class_file_from_hash( const char *name );
+int ioc_check_include_file( const char *file TSRMLS_DC );
 #endif	/* PHP_IOC_H */
 
