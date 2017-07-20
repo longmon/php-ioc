@@ -17,3 +17,6 @@ ioc::init($class_map); //初始化，底层依次执行的是require操作，所
 $foo = ioc::make("Foo"); //实例化对象，对象被保存内存，下次可以直接使用
 
 $foo1 = ioc::make("Foo"); //与foo是同一个对象
+
+## 注意！ 
+    php-ioc处于开发测试阶段，尚不能应用于生产环境中！
