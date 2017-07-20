@@ -178,13 +178,13 @@ ZEND_METHOD(ioc, make)
 {
 	char *name = NULL;
 	int len;
-	zval ***argv;
-	int argc;
+	zval ***argv = NULL;
+	int argc = 0;
 	if( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s*", &name, &len, &argv, &argc) == FAILURE ){
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Method ioc::make( class_name string [, parameter1, parameter2 ...]) required at least one paramter!");
 		RETURN_FALSE;
 	}
-	ioc_get_object_instance( name, return_value, argv, argc );
+	ioc_get_object_instance( name, return_value, argv, argc TSRMLS_CC );
 }
 
 ZEND_FUNCTION(ioc_version)
@@ -258,10 +258,10 @@ void hashtable_foreach_print( HashTable *ht ){
 
 int ioc_get_object_instance( char *name, zval *return_value, zval ***argv, int argc TSRMLS_DC ){
 
-	if( ioc_get_object_from_hash( name, return_value ) == SUCCESS ){
+	if( ioc_get_object_from_hash( name, return_value TSRMLS_CC ) == SUCCESS ){
 		return 0;
 	}
-
+	
 	char *class_file = NULL;
 	class_file = ioc_get_class_file_from_hash( name )  ;
 	if( !class_file )
@@ -280,7 +280,7 @@ int ioc_get_object_instance( char *name, zval *return_value, zval ***argv, int a
 	return -1;
 }
 
-int ioc_add_object_to_hash( const char *name, zval *obj )
+int ioc_add_object_to_hash( const char *name, zval **obj )
 {
 	if( !obj ){
 		return -1;
@@ -288,22 +288,26 @@ int ioc_add_object_to_hash( const char *name, zval *obj )
 	if( !object_map ){
 		return -1;
 	}
-	if( zend_hash_update( object_map, name, sizeof(name), (void**)&obj, sizeof(obj), NULL) == SUCCESS ){
+	if( zend_hash_update( object_map, name, sizeof(name), obj, sizeof(**obj), NULL) == SUCCESS ){
 		return 0;
 	}
 	return -1;
 }
 
-int ioc_get_object_from_hash( const char *name, zval *obj )
+int ioc_get_object_from_hash( const char *name, zval *return_value TSRMLS_DC )
 {
 	if( !object_map ){
 		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "object_map had not been alloced");
 		return -1;
 	}
-	if( zend_hash_find( object_map, name, sizeof(name), (void **)&obj ) == FAILURE ){
-		return -1;
+	zval **obj;
+	if( zend_hash_find( object_map, name, sizeof(name), (void **)&obj ) == SUCCESS ){
+		Z_TYPE_P(return_value)   = IS_OBJECT;
+		Z_OBJVAL_P(return_value) = Z_OBJVAL_PP(obj);
+		//zval_ptr_dtor(obj);
+		return 0;
 	}
-	return 0;
+	return -1;
 }
 
 char* ioc_get_class_file_from_hash( const char *name  ){
@@ -411,7 +415,7 @@ int ioc_instance_object( char *name, zval *return_value, zval ***argv, int argc 
 
 	if( zend_lookup_class( name, strlen(name), &class_ce TSRMLS_CC ) == SUCCESS ){
 		object_init_ex(return_value, *class_ce);	
-		ioc_add_object_to_hash(name, return_value );
+		ioc_add_object_to_hash(name, &return_value );
 		old_scope = EG(scope);
 		EG(scope) = *class_ce;
 		zend_function *func = Z_OBJ_HT_P(return_value)->get_constructor(return_value TSRMLS_CC);
@@ -432,8 +436,8 @@ int ioc_instance_object( char *name, zval *return_value, zval ***argv, int argc 
 			fci.symbol_table = NULL;
 			fci.object_ptr = return_value;
 			fci.retval_ptr_ptr = &retval_ptr;
-			fci.param_count = argc;
-			fci.params = argv;
+			fci.param_count = 0;
+			fci.params = NULL;
 			fci.no_separation = 1;
 
 			fcc.initialized = 1;
