@@ -16,6 +16,8 @@ ioc::init($class_map); //初始化，底层依次执行的是require操作，所
 
 $foo = ioc::make("Foo"); //实例化对象，对象被保存内存，下次可以直接使用
 
+$bar = ioc::make("Bar", $param1); //带参数，调用__construct方法
+
 $foo1 = ioc::make("Foo"); //与foo是同一个对象
 ```
 
