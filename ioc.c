@@ -33,6 +33,7 @@ ZEND_DECLARE_MODULE_GLOBALS(ioc)
 
 /* True global resources - no need for thread safety here */
 static int le_ioc;
+
 static zend_class_entry ioc_class_entry;
 static zend_class_entry *ioc_class_entry_ptr;
 HashTable *class_map 	= NULL;
@@ -43,7 +44,7 @@ HashTable *object_map 	= NULL;
  * Every user visible function must have an entry in ioc_functions[].
  */
 const zend_function_entry ioc_class_methods[] = {
-	ZEND_ME(ioc, init, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)		/* For testing, remove later. */
+	ZEND_ME(ioc, init, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	ZEND_ME(ioc, make, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	
 	PHP_FE_END	/* Must be the last line in ioc_functions[] */
@@ -85,7 +86,7 @@ PHP_INI_BEGIN()
     STD_PHP_INI_ENTRY("ioc.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_ioc_globals, ioc_globals)
     STD_PHP_INI_ENTRY("ioc.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_ioc_globals, ioc_globals)
 PHP_INI_END()
-*/
+
 /* }}} */
 
 /* {{{ php_ioc_init_globals
@@ -109,6 +110,11 @@ PHP_MINIT_FUNCTION(ioc)
 
 	INIT_CLASS_ENTRY( ioc_class_entry, "ioc", ioc_class_methods );
 	ioc_class_entry_ptr = zend_register_internal_class( &ioc_class_entry TSRMLS_CC);
+
+	//定义属性
+    zend_declare_property_string(ioc_class_entry_ptr, "name", strlen("name"), "", ZEND_ACC_PUBLIC TSRMLS_CC);
+    //定义常量
+    zend_declare_class_constant_string(ioc_class_entry_ptr, "VERSION", strlen("VERSION"), "0.1 alpha" TSRMLS_CC);
 
 	return SUCCESS;
 }
@@ -157,7 +163,9 @@ PHP_RSHUTDOWN_FUNCTION(ioc)
 PHP_MINFO_FUNCTION(ioc)
 {
 	php_info_print_table_start();
-	php_info_print_table_header(2, "ioc support", "enabled");
+	php_info_print_table_header(2, 	"ioc support", "enabled");
+	php_info_print_table_row(2, 	"author",      "longmon");
+	php_info_print_table_row(2, 	"version",     "0.1 alpha");
 	php_info_print_table_end();
 
 	/* Remove comments if you have entries in php.ini
@@ -173,6 +181,7 @@ ZEND_METHOD(ioc, init)
 		return;
 	}
 	ioc_load_class_map( Z_ARRVAL_P(fileList) );
+	RETURN_TRUE;
 }
 ZEND_METHOD(ioc, make)
 {
@@ -184,7 +193,9 @@ ZEND_METHOD(ioc, make)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Method ioc::make( class_name string [, parameter1, parameter2 ...]) required at least one paramter!");
 		RETURN_FALSE;
 	}
-	ioc_get_object_instance( name, return_value, argv, argc TSRMLS_CC );
+	if( ioc_get_object_instance( name, return_value, argv, argc TSRMLS_CC ) == FAILURE ){
+		RETURN_NULL();
+	}
 }
 
 ZEND_FUNCTION(ioc_version)
